@@ -1,0 +1,32 @@
+{
+  "name": "gherkin",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "gherkin/src",
+  "projectType": "library",
+  "release": {
+    "version": {
+      "generatorOptions": {
+        "packageRoot": "dist\\{projectRoot}",
+        "currentVersionResolver": "git-tag"
+      }
+    }
+  },
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/vite:build",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/gherkin",
+        "main": "gherkin/src/index.ts",
+        "tsConfig": "gherkin/tsconfig.lib.json",
+        "assets": ["gherkin/*.md"]
+      }
+    },
+    "nx-release-publish": {
+      "options": {
+        "packageRoot": "dist\\{projectRoot}"
+      }
+    }
+  }
+}

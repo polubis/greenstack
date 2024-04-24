@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@greenstack/core": ["core/src/index.ts"]
+      "@greenstack/core": ["core/src/index.ts"],
+      "@greenstack/gherkin": ["gherkin/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
