@@ -4,5 +4,15 @@
   "dependencies": {},
   "main": "./index.js",
   "module": "./index.mjs",
-  "typings": "./index.d.ts"
+  "typings": "./index.d.ts",
+  "license": "MIT",
+  "keywords": [
+    "typescript",
+    "gherkin",
+    "e2e tests",
+    "cucumber",
+    "playwright",
+    "cypress"
+  ],
+  "description": "Plain TypeScript interpreter for Gherkin syntax"
 }

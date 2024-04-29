@@ -1,80 +1,97 @@
-type GherkinFnName = 'Given' | 'When' | 'Then' | 'And';
-type MiddlewareFunction<Key extends string | symbol | number> = (
-  name: GherkinFnName,
-  key: Key
-) => void;
+type GherkinFunctionName = 'given' | 'when' | 'then' | 'and';
 
-type Commands<C extends Record<string, unknown>> = Record<
-  keyof C,
-  (...args: never[]) => void
->;
+type GherkinMiddleware = ((name: GherkinFunctionName, key: string) => void)[];
 
-interface Setup<C extends Record<string, unknown>> {
-  commands: Commands<C>;
-  middleware?: MiddlewareFunction<keyof C>[];
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type CommandHandler = (...args: any[]) => Promise<void> | void;
 
-function Gherkin<S extends Setup<S['commands']>>({ commands, middleware }: S) {
-  function runMiddleware(name: GherkinFnName, key: keyof S['commands']): void {
-    middleware?.forEach((fn) => fn(name, key));
-  }
+const gherkin =
+  (...middleware: GherkinMiddleware) =>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  <C extends Record<string, CommandHandler>>(commands: C) => {
+    const queue: (() => Promise<void>)[] = [];
 
-  function Given<K extends keyof S['commands']>(
-    key: K,
-    ...args: Parameters<S['commands'][K]>
-  ) {
-    runMiddleware('Given', key);
-    commands[key](...args);
+    async function runQueue(): Promise<void> {
+      for (const command of queue) {
+        await command();
+      }
+    }
+
+    function runMiddleware<K extends keyof C>(
+      name: GherkinFunctionName,
+      key: K
+    ): void {
+      if (typeof key !== 'string') {
+        throw Error(
+          'Cannot run middleware. Passed key is not matching any commands key'
+        );
+      }
+
+      middleware.forEach((fn) => fn(name, key));
+    }
+
+    function given<K extends keyof C>(key: K, ...args: Parameters<C[K]>) {
+      queue.push(async () => {
+        runMiddleware('given', key);
+        await commands[key](...args);
+      });
+
+      return {
+        when,
+        then,
+        and,
+        done,
+      };
+    }
+
+    function when<K extends keyof C>(key: K, ...args: Parameters<C[K]>) {
+      queue.push(async () => {
+        runMiddleware('when', key);
+        await commands[key](...args);
+      });
+
+      return {
+        and,
+        then,
+        done,
+      };
+    }
+
+    function then<K extends keyof C>(key: K, ...args: Parameters<C[K]>) {
+      queue.push(async () => {
+        runMiddleware('then', key);
+        await commands[key](...args);
+      });
+
+      return {
+        when,
+        and,
+        done,
+      };
+    }
+
+    function and<K extends keyof C>(key: K, ...args: Parameters<C[K]>) {
+      queue.push(async () => {
+        runMiddleware('and', key);
+        await commands[key](...args);
+      });
+
+      return {
+        then,
+        when,
+        and,
+        done,
+      };
+    }
+
+    async function done(): Promise<void> {
+      await runQueue();
+    }
 
     return {
-      Then,
-      When,
-      And,
+      given,
     };
-  }
+  };
 
-  function Then<K extends keyof S['commands']>(
-    key: K,
-    ...args: Parameters<S['commands'][K]>
-  ) {
-    runMiddleware('Then', key);
-    commands[key](...args);
-
-    return {
-      And,
-      When,
-    };
-  }
-
-  function When<K extends keyof S['commands']>(
-    key: K,
-    ...args: Parameters<S['commands'][K]>
-  ) {
-    runMiddleware('When', key);
-    commands[key](...args);
-
-    return {
-      And,
-      Then,
-    };
-  }
-
-  function And<K extends keyof S['commands']>(
-    key: K,
-    ...args: Parameters<S['commands'][K]>
-  ) {
-    runMiddleware('And', key);
-    commands[key](...args);
-
-    return {
-      Then,
-      When,
-      And,
-    };
-  }
-
-  return { Given };
-}
-
-export type { Setup, Commands, MiddlewareFunction };
-export { Gherkin };
+export type { GherkinFunctionName, GherkinMiddleware };
+export { gherkin };
