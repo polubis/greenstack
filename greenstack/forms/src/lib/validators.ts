@@ -1,6 +1,6 @@
 import { ValidatorFn } from './defs';
 
 const isString = (): ValidatorFn<string, `isString`> => (value) =>
-  typeof value === `string` ? null : `isString`;
+  typeof value === `string` ? ` ` : `isString`;
 
 export { isString };

@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ValuesBase = Record<string | number, any>;
 
-type ValidatorFnResult<Identifier = string> = Identifier | null;
+type ValidatorFnResult<Identifier = string> = Identifier | ` `;
 type ValidatorFn<Value, Identifier = string> = (
   value: Value
 ) => ValidatorFnResult<Identifier>;
@@ -9,7 +9,7 @@ type ValidatorFn<Value, Identifier = string> = (
 type ValidatorsRegistryBase = Record<
   string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (...args: any[]) => (...args: any[]) => string | null
+  (...args: any[]) => ValidatorFn<any>
 >;
 
 type ValidatorsConfig<Values extends ValuesBase> = {
@@ -22,7 +22,7 @@ type ValidationResult<
   ValidatorsRegistry extends ValidatorsRegistryBase
 > = {
   [ValueKey in keyof Values]: {
-    [ValidatorKey in keyof ValidatorsRegistry]: ValidatorKey | null;
+    [ValidatorKey in keyof ValidatorsRegistry]: ValidatorFnResult<ValidatorKey>;
   };
 };
 

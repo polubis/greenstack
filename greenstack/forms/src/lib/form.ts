@@ -51,19 +51,30 @@ interface BaseData {
 const req = () => (value: string) => '';
 const min = (limit: number) => (value: string) => '';
 
-const r = form({
+const validatorsRegistryBase = {
   req,
   min,
   isString,
-})<BaseData>({ firstName: '' }, (v) => ({
-  firstName: [v.req(), v.min(2)],
+};
+
+const r = form(validatorsRegistryBase)<BaseData>({ firstName: '' }, (v) => ({
+  firstName: [v.req(), v.min(2), v.isString()],
 }));
 
 const translations = {
+  ' ': 'All is fine',
   isString: `The field must be a string`,
 };
 
-r.result.firstName.isString === `isString`;
+// r.result.firstName.isString && translations[r.result.firstName.isString];
+// translations[r.result.firstName.isString];
+// const rs = r.result.firstName.isString;
+// r.result.firstName.min === 'min'
+// if (rs === 'isString') {
+// }
+
+// if (rs === ` `) {
+// }
 // r.result.firstName.req
 
 // r.errors.req
