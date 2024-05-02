@@ -48,8 +48,14 @@ interface BaseData {
   firstName: string;
 }
 
-const req = () => (value: string) => '';
-const min = (limit: number) => (value: string) => '';
+const req =
+  (message = 'cos') =>
+  (value: string) =>
+    '';
+const min =
+  (limit: number, message = 'cos') =>
+  (value: string) =>
+    '';
 
 const validatorsRegistryBase = {
   req,
@@ -58,10 +64,10 @@ const validatorsRegistryBase = {
 };
 
 const r = form(validatorsRegistryBase)<BaseData>({ firstName: '' }, (v) => ({
-  firstName: [v.req(), v.min(2), v.isString()],
+  firstName: [v.req(), v.min(2, 'cos'), v.isString()],
 }));
 
-const translations = {
+const translations: Record<string, string> = {
   '': 'All is fine',
   isString: `The field must be a string`,
 };

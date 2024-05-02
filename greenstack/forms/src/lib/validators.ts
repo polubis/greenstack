@@ -1,6 +1,8 @@
-import { ValidatorFn } from './defs';
+import { validate } from './utils';
 
-const isString = (): ValidatorFn<string, `isString`> => (value) =>
-  typeof value === `string` ? ` ` : `isString`;
+const isString =
+  (message = 'Value must be a string') =>
+  (value: string) =>
+    validate(typeof value === `string`, message);
 
 export { isString };
