@@ -7,6 +7,7 @@ import type {
   Formable,
   FormState,
 } from './defs';
+import { isString } from './validators';
 
 const form =
   <ValidatorsRegistry extends ValidatorsRegistryBase>(
@@ -53,11 +54,16 @@ const min = (limit: number) => (value: string) => '';
 const r = form({
   req,
   min,
+  isString,
 })<BaseData>({ firstName: '' }, (v) => ({
   firstName: [v.req(), v.min(2)],
 }));
 
-r.result.firstName.min;
+const translations = {
+  isString: `The field must be a string`,
+};
+
+r.result.firstName.isString === `isString`;
 // r.result.firstName.req
 
 // r.errors.req
