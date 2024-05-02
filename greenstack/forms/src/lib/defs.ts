@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ValuesBase = Record<string | number, any>;
 
-type ValidatorFnResult<Identifier = string> = Identifier | ` `;
+type ValidatorFnResult<Identifier = string> = Identifier | '';
 type ValidatorFn<Value, Identifier = string> = (
   value: Value
 ) => ValidatorFnResult<Identifier>;

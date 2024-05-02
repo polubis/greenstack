@@ -62,21 +62,17 @@ const r = form(validatorsRegistryBase)<BaseData>({ firstName: '' }, (v) => ({
 }));
 
 const translations = {
-  ' ': 'All is fine',
+  '': 'All is fine',
   isString: `The field must be a string`,
 };
 
-// r.result.firstName.isString && translations[r.result.firstName.isString];
-// translations[r.result.firstName.isString];
-// const rs = r.result.firstName.isString;
-// r.result.firstName.min === 'min'
-// if (rs === 'isString') {
-// }
-
-// if (rs === ` `) {
-// }
-// r.result.firstName.req
-
+r.result.firstName.isString && translations[r.result.firstName.isString];
+translations[r.result.firstName.isString];
+const rs = r.result.firstName.isString;
+r.result.firstName.min === 'min';
+r.result.firstName.isString === '';
+rs === 'isString';
+rs === ``;
 // r.errors.req
 // r.result.req
 
