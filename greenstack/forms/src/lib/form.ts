@@ -1,19 +1,12 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ValuesBase = Record<string | number, any>;
-
-type ValidatorFnResult = string | null;
-type ValidatorFn<Value> = (value: Value) => ValidatorFnResult;
-
-type ValidatorsRegistryBase = Record<
-  string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (...args: any[]) => (...args: any[]) => string | null
->;
-
-type ValidatorsConfig<Values extends ValuesBase> = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [Key in keyof Values]?: ValidatorFn<Values[Key]>[];
-};
+import type {
+  ValidatorsRegistryBase,
+  ValidatorsConfig,
+  ValuesBase,
+  ValidationResult,
+  FormMiddleware,
+  Formable,
+  FormState,
+} from './defs';
 
 const form =
   <ValidatorsRegistry extends ValidatorsRegistryBase>(
@@ -23,8 +16,32 @@ const form =
     values: Values,
     validators: (
       validatorsRegistry: ValidatorsRegistry
-    ) => ValidatorsConfig<Values> = () => ({})
-  ) => {};
+    ) => ValidatorsConfig<Values> = () => ({}),
+    middleware: FormMiddleware<Values, ValidatorsRegistry> = []
+  ) => {
+    return {} as {
+      result: ValidationResult<Values, ValidatorsRegistry>;
+    };
+
+    // const set: Formable<Values, ValidatorsRegistry>['set'] = (key, value) => {
+    //   values = {
+    //     ...values,
+    //     [key]: value,
+    //   };
+
+    //   const state: FormState<Values, ValidatorsRegistry> = {
+    //     values,
+    //   };
+
+    //   middleware.forEach((fn) => fn(state));
+
+    //   return {
+    //     values,
+    //   };
+    // };
+
+    // return { set };
+  };
 
 interface BaseData {
   firstName: string;
@@ -33,15 +50,6 @@ interface BaseData {
 const req = () => (value: string) => '';
 const min = (limit: number) => (value: string) => '';
 
-const validators: ValidatorsConfig<BaseData> = {
-  firstName: [req(), min(2)],
-};
-
-const baseValidatorsRegistry = {
-  min,
-  req,
-};
-
 const r = form({
   req,
   min,
@@ -49,7 +57,7 @@ const r = form({
   firstName: [v.req(), v.min(2)],
 }));
 
-r.result.min;
+r.result.firstName.min;
 // r.result.firstName.req
 
 // r.errors.req
