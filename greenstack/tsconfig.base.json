@@ -16,6 +16,7 @@
     "baseUrl": ".",
     "paths": {
       "@greenstack/core": ["core/src/index.ts"],
+      "@greenstack/forms": ["forms/src/index.ts"],
       "@greenstack/gherkin": ["gherkin/src/index.ts"]
     }
   },
