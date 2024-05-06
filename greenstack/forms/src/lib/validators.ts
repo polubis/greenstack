@@ -3,9 +3,9 @@ import { ValidatorResult } from './defs';
 export const min =
   (limit: number) =>
   (value: string | unknown[]): ValidatorResult<'min'> =>
-    value.length > limit ? `min` : null;
+    value.length >= limit ? null : `min`;
 
 export const max =
   (limit: number) =>
   (value: string | unknown[]): ValidatorResult<'max'> =>
-    value.length > limit ? `max` : null;
+    value.length <= limit ? null : `max`;

@@ -7,9 +7,8 @@ import {
   FormSubscription,
   FormSubscriberAction,
 } from './defs';
-import { max, min } from './validators';
 
-const form = <Values extends ValuesBase>(
+export const form = <Values extends ValuesBase>(
   validatorsSetup: ValidatorsSetup<Values> = {}
 ) => {
   const subscriptions = new Map<string, FormSubscriber<Values>>();
@@ -25,6 +24,7 @@ const form = <Values extends ValuesBase>(
     for (const key in values) {
       const value = values[key];
       const fns = validatorsSetup[key] ?? [];
+      result[key] = null;
 
       for (const fn of fns) {
         const status = fn(value);
@@ -117,15 +117,3 @@ const form = <Values extends ValuesBase>(
     state: (): FormState<Values> => state,
   };
 };
-
-interface RegisterFormData {
-  username: string;
-  password: string;
-}
-
-const registerForm = form<RegisterFormData>({
-  username: [],
-  password: [min(15), max(20)],
-});
-
-registerForm.init({ username: ``, password: `` });
