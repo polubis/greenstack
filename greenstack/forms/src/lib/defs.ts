@@ -1,78 +1,33 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export type ValidatorResult<Identifier extends string> = Identifier | null;
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ValuesBase = Record<string | number, any>;
+export type ValuesBase = Record<string | number, any>;
 
-type ValidatorFnResult = string;
-type ValidatorFn<Value> = (value: Value) => ValidatorFnResult;
-
-type ValidatorsRegistryBase = Record<
-  string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (...args: any[]) => ValidatorFn<any>
->;
-
-type ValidatorsConfig<Values extends ValuesBase> = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [Key in keyof Values]?: ValidatorFn<Values[Key]>[];
+export type ValidatorsSetup<Values extends ValuesBase> = {
+  [Key in keyof Values]?: ((value: Values[Key]) => ValidatorResult<string>)[];
 };
 
-type ValidationResult<
-  Values extends ValuesBase,
-  ValidatorsRegistry extends ValidatorsRegistryBase
-> = {
-  [ValueKey in keyof Values]: {
-    [ValidatorKey in keyof ValidatorsRegistry]: ValidatorFnResult;
-  };
+export type ValuesKeys<Values extends ValuesBase> = (keyof Values)[];
+
+export type ValidationResult<Values extends ValuesBase> = {
+  [Key in keyof Values]: ValidatorResult<string>;
 };
 
-type FormState<
-  Values extends ValuesBase,
-  ValidatorsRegistry extends ValidatorsRegistryBase
-> = {
+export interface FormState<Values extends ValuesBase> {
   values: Values;
-  result: ValidationResult<Values, ValidatorsRegistry>;
-  valid: boolean;
-  invalid: boolean;
+  result: ValidationResult<Values>;
   touched: boolean;
   untouched: boolean;
   confirmed: boolean;
   unconfirmed: boolean;
-};
+  invalid: boolean;
+  valid: boolean;
+}
 
-type FormMiddlewareFn<
-  Values extends ValuesBase,
-  ValidatorsRegistry extends ValidatorsRegistryBase
-> = (state: FormState<Values, ValidatorsRegistry>) => void;
-
-type FormMiddleware<
-  Values extends ValuesBase,
-  ValidatorsRegistry extends ValidatorsRegistryBase
-> = FormMiddlewareFn<Values, ValidatorsRegistry>[];
-
-type FormActions<
-  Values extends ValuesBase,
-  ValidatorsRegistry extends ValidatorsRegistryBase
-> = {
-  set<Key extends keyof Values>(
-    key: Key,
-    value: Values[Key]
-  ): FormState<Values, ValidatorsRegistry>;
-};
-
-type Formable<
-  Values extends ValuesBase,
-  ValidatorsRegistry extends ValidatorsRegistryBase
-> = FormState<Values, ValidatorsRegistry> &
-  FormActions<Values, ValidatorsRegistry>;
-
-export type {
-  ValuesBase,
-  ValidatorFnResult,
-  ValidatorFn,
-  ValidatorsRegistryBase,
-  ValidatorsConfig,
-  ValidationResult,
-  FormState,
-  FormMiddleware,
-  FormActions,
-  Formable,
-};
+export type FormSubscriberAction = `init` | `set`;
+export type FormSubscriber<Values extends ValuesBase> = (
+  action: FormSubscriberAction,
+  state: FormState<Values>
+) => void;
+export type FormSubscription = () => void;

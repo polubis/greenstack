@@ -1,56 +1,114 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-type ValidationResult<Identifier extends string> = Identifier | null;
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ValuesBase = Record<string | number, any>;
-
-type ValidatorsSetup<Values extends ValuesBase> = {
-  [Key in keyof Values]?: ((value: Values[Key]) => ValidationResult<string>)[];
-};
-
-type ValuesKeys<Values extends ValuesBase> = (keyof Values)[];
-
-type ValidationReport<Values extends ValuesBase> = {
-  [Key in keyof Values]: ValidationResult<string>;
-};
+import {
+  ValidatorsSetup,
+  ValuesBase,
+  FormState,
+  ValidationResult,
+  FormSubscriber,
+  FormSubscription,
+  FormSubscriberAction,
+} from './defs';
+import { max, min } from './validators';
 
 const form = <Values extends ValuesBase>(
   validatorsSetup: ValidatorsSetup<Values> = {}
 ) => {
-  let values: Values;
-  let keys: ValuesKeys<Values>;
-  let report: ValidationReport<Values>;
+  const subscriptions = new Map<string, FormSubscriber<Values>>();
+
+  let state: FormState<Values>;
+
+  const validate = (
+    values: Values
+  ): Pick<FormState<Values>, 'invalid' | 'valid' | 'result'> => {
+    const result = {} as ValidationResult<Values>;
+    let invalid = false;
+
+    for (const key in values) {
+      const value = values[key];
+      const fns = validatorsSetup[key] ?? [];
+
+      for (const fn of fns) {
+        const status = fn(value);
+
+        if (typeof status === `string`) {
+          result[key] = status;
+          invalid = true;
+          break;
+        }
+      }
+    }
+
+    return { result, invalid, valid: !invalid };
+  };
+
+  const setState = (newState: FormState<Values>): void => {
+    state = {
+      ...state,
+      ...newState,
+    };
+  };
+
+  const confirm = (
+    confirmed: boolean
+  ): Pick<FormState<Values>, 'confirmed' | 'unconfirmed'> => {
+    return {
+      confirmed,
+      unconfirmed: !confirmed,
+    };
+  };
+
+  const touch = (
+    touched: boolean
+  ): Pick<FormState<Values>, 'touched' | 'untouched'> => {
+    return {
+      touched,
+      untouched: !touched,
+    };
+  };
+
+  const notify = (action: FormSubscriberAction): void => {
+    const keys = subscriptions.keys();
+
+    for (const key of keys) {
+      const fn = subscriptions.get(key);
+      fn?.(action, state);
+    }
+  };
 
   return {
-    init: (initialValues: Values) => {
-      values = initialValues;
-      keys = Object.keys(values);
+    init: (values: Values): void => {
+      setState({
+        values,
+        ...validate(values),
+        ...confirm(false),
+        ...touch(false),
+      });
+      notify(`init`);
     },
-    set: <Key extends keyof Values>(key: Key, value: Values[Key]) => {
-      values = {
+    set: (values: Partial<Values>): void => {
+      const newValues = {
+        ...state.values,
         ...values,
-        [key]: value,
+      };
+
+      setState({
+        values: newValues,
+        ...validate(newValues),
+        ...confirm(false),
+        ...touch(false),
+      });
+      notify(`set`);
+    },
+    subscribe: (subscriber: FormSubscriber<Values>): FormSubscription => {
+      const key = new Date().toISOString();
+      subscriptions.set(key, subscriber);
+
+      return () => {
+        subscriptions.delete(key);
       };
     },
-    patch: (newValues: Partial<Values>) => {
-      values = {
-        ...values,
-        ...newValues,
-      };
-    },
-    report,
+    state: (): FormState<Values> => state,
   };
 };
-
-const min =
-  (limit: number) =>
-  (value: string | unknown[]): ValidationResult<'min'> =>
-    value.length > limit ? `min` : null;
-
-const max =
-  (limit: number) =>
-  (value: string | unknown[]): ValidationResult<'max'> =>
-    value.length > limit ? `max` : null;
 
 interface RegisterFormData {
   username: string;
@@ -61,19 +119,5 @@ const registerForm = form<RegisterFormData>({
   username: [],
   password: [min(15), max(20)],
 });
-// Performs validation initially.
+
 registerForm.init({ username: ``, password: `` });
-
-// registerForm.report.password.
-// registerForm.report.password?.charAt();
-// const [form] = useState(registerForm.init)
-// const [state, setState] = useState(form.state)
-
-// React.useEffect(() => {
-//   form.subscribe(setState)
-// }, [])
-
-// registerForm.set();
-// registerForm.subscribe((state) => {
-//   setState(stat)
-// });

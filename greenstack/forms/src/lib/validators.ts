@@ -1,8 +1,11 @@
-import { validate } from './utils';
+import { ValidatorResult } from './defs';
 
-const isString =
-  (message = 'Value must be a string') =>
-  (value: string) =>
-    validate(typeof value === `string`, message);
+export const min =
+  (limit: number) =>
+  (value: string | unknown[]): ValidatorResult<'min'> =>
+    value.length > limit ? `min` : null;
 
-export { isString };
+export const max =
+  (limit: number) =>
+  (value: string | unknown[]): ValidatorResult<'max'> =>
+    value.length > limit ? `max` : null;

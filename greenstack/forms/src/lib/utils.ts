@@ -1,6 +1,6 @@
-import { ValidatorFnResult } from './defs';
+import { ValidatorResult } from './defs';
 
-const validate = (valid: boolean, message: string): ValidatorFnResult =>
+const validate = (valid: boolean, message: string): ValidatorResult =>
   valid ? '' : message;
 
 export { validate };
