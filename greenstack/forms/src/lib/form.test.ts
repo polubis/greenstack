@@ -1,6 +1,6 @@
 import { expect, it, describe } from 'vitest';
 
-import { FormState, ValidatorsSetup, form, max, min } from '..';
+import { ValidatorsSetup, form, max, min } from '..';
 
 describe('Forms management works when', () => {
   interface RegisterFormValues {
@@ -72,5 +72,31 @@ describe('Forms management works when', () => {
     expect(state2.result.phone).toBe(null);
     expect(state2.result.password).toBe(null);
     expect(state2.result.repeatedPassword).toBe(null);
+
+    registerForm.init({
+      phone: 1,
+      username: `2231321313121321321`,
+      password: `1`,
+      repeatedPassword: `2`,
+    });
+
+    const state3 = registerForm.state();
+
+    expect(state3.confirmed).toBe(false);
+    expect(state3.unconfirmed).toBe(true);
+    expect(state3.invalid).toBe(true);
+    expect(state3.valid).toBe(false);
+    expect(state3.touched).toBe(false);
+    expect(state3.untouched).toBe(true);
+    expect(state3.values).toEqual({
+      phone: 1,
+      username: `2231321313121321321`,
+      password: `1`,
+      repeatedPassword: `2`,
+    });
+    expect(state3.result.username).toBe(`max`);
+    expect(state3.result.phone).toBe(null);
+    expect(state3.result.password).toBe(null);
+    expect(state3.result.repeatedPassword).toBe(null);
   });
 });
