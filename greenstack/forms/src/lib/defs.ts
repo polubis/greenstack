@@ -25,7 +25,7 @@ export interface FormState<Values extends ValuesBase> {
   valid: boolean;
 }
 
-export type FormSubscriberAction = `init` | `set`;
+export type FormSubscriberAction = `init` | `set` | `confirm`;
 export type FormSubscriber<Values extends ValuesBase> = (
   action: FormSubscriberAction,
   state: FormState<Values>

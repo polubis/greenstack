@@ -91,12 +91,20 @@ const form = <Values extends ValuesBase>(
       };
 
       setState({
+        ...state,
         values: newValues,
         ...validate(newValues),
-        ...confirm(false),
-        ...touch(false),
+        ...touch(true),
       });
       notify(`set`);
+    },
+    confirm: (): void => {
+      setState({
+        ...state,
+        ...validate(state.values),
+        ...confirm(true),
+      });
+      notify(`confirm`);
     },
     subscribe: (subscriber: FormSubscriber<Values>): FormSubscription => {
       const key = new Date().toISOString();
