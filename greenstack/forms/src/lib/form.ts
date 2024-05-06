@@ -1,109 +1,85 @@
-import type {
-  ValidatorsRegistryBase,
-  ValidatorsConfig,
-  ValuesBase,
-  ValidationResult,
-  FormMiddleware,
-  Formable,
-  FormState,
-} from './defs';
-import { isString } from './validators';
+type ValidationResult<Identifier extends string = string> = Identifier | ' ';
+// Returns truthy if value is valid.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ValidatorsRegistryFn = (
+  ...args: any[]
+) => (value: unknown) => ValidationResult;
+
+type ValidatorsRegistryBase = Record<string, ValidatorsRegistryFn>;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ValuesBase = Record<string | number, any>;
+
+type ValidatorsSetup<Values extends ValuesBase> = {
+  [Key in keyof ValuesBase]?: (value: Values[Key]) => ValidationResult;
+};
 
 const form =
   <ValidatorsRegistry extends ValidatorsRegistryBase>(
-    validatorsRegistry: ValidatorsRegistry
+    registry: ValidatorsRegistry
   ) =>
   <Values extends ValuesBase>(
-    values: Values,
-    validators: (
-      validatorsRegistry: ValidatorsRegistry
-    ) => ValidatorsConfig<Values> = () => ({}),
-    middleware: FormMiddleware<Values, ValidatorsRegistry> = []
+    validatorsSetup: ValidatorsSetup<Values> = {}
   ) => {
-    return {} as {
-      result: ValidationResult<Values, ValidatorsRegistry>;
+    let values: Values;
+
+    return {
+      init: (initialValues: Values) => {
+        values = initialValues;
+      },
+      set: <Key extends keyof Values>(key: Key, value: Values[Key]) => {
+        values = {
+          ...values,
+          [key]: value,
+        };
+      },
+      patch: (newValues: Partial<Values>) => {
+        values = {
+          ...values,
+          ...newValues,
+        };
+      },
     };
-
-    // const set: Formable<Values, ValidatorsRegistry>['set'] = (key, value) => {
-    //   values = {
-    //     ...values,
-    //     [key]: value,
-    //   };
-
-    //   const state: FormState<Values, ValidatorsRegistry> = {
-    //     values,
-    //   };
-
-    //   middleware.forEach((fn) => fn(state));
-
-    //   return {
-    //     values,
-    //   };
-    // };
-
-    // return { set };
   };
 
-interface BaseData {
-  firstName: string;
+const min =
+  (limit: number) =>
+  (value: unknown): ValidationResult<'min'> => {
+    if (typeof value !== `string` && !Array.isArray(value)) return ` `;
+
+    return value.length > limit ? `min` : ` `;
+  };
+
+const max =
+  (limit: number) =>
+  (value: unknown): ValidationResult<'max'> => {
+    if (typeof value !== `string` && !Array.isArray(value)) return ` `;
+
+    return value.length > limit ? `max` : ` `;
+  };
+
+const createForm = form({
+  min,
+  max,
+});
+
+interface RegisterFormData {
+  username: string;
+  password: string;
 }
 
-const req =
-  (message = 'cos') =>
-  (value: string) =>
-    '';
-const min =
-  (limit: number, message = 'cos') =>
-  (value: string) =>
-    '';
+const registerForm = createForm<RegisterFormData>({});
+// Performs validation initially.
+registerForm.init({ username: ``, password: `` });
 
-const validatorsRegistryBase = {
-  req,
-  min,
-  isString,
-};
+// const [form] = useState(registerForm.init)
+// const [state, setState] = useState(form.state)
 
-const r = form(validatorsRegistryBase)<BaseData>({ firstName: '' }, (v) => ({
-  firstName: [v.req(), v.min(2, 'cos'), v.isString()],
-}));
+// React.useEffect(() => {
+//   form.subscribe(setState)
+// }, [])
 
-const translations: Record<string, string> = {
-  '': 'All is fine',
-  isString: `The field must be a string`,
-};
-
-r.result.firstName.isString && translations[r.result.firstName.isString];
-translations[r.result.firstName.isString];
-const rs = r.result.firstName.isString;
-r.result.firstName.min === 'min';
-r.result.firstName.isString === '';
-rs === 'isString';
-rs === ``;
-// r.errors.req
-// r.result.req
-
-// const conForm = form('strict')<ValuesInterface>(
-//   {
-//     firstName: ``,
-//   },
-//   {
-//     firstName: [req, min(2)],
-//   }
-// );
-
-// conForm.values;
-// conForm.validators
-// conForm.set();
-// conForm.patch();
-// conForm.reconfigure();
-// conForm.keys();
-
-// const [{ values, validators, report }, { change }] = form('strict', [
-//   (values, validators, report) => set({ values, validators, reports }),
-// ])(values, validators);
-
-// const useForm = create<DocStoreState>((set) => ({
-//   values,
-//   report,
-//   change,
-// }));
+// registerForm.set();
+// registerForm.subscribe((state) => {
+//   setState(stat)
+// });
